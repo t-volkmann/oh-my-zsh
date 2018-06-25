@@ -80,7 +80,7 @@ prompt_end() {
 # Context: user@hostname (who am I and where am I)
 prompt_context() {
   if [[ "$USER" != "$DEFAULT_USER" || -n "$SSH_CLIENT" ]]; then
-    prompt_segment black default "%(!.%{%F{yellow}%}.)$USER@%m"
+    prompt_segment black yellow "%(!.%{%F{yellow}%}.)$USER@%m"
   fi
 }
 
@@ -194,7 +194,10 @@ prompt_dir() {
 prompt_virtualenv() {
   local virtualenv_path="$VIRTUAL_ENV"
   if [[ -n $virtualenv_path && -n $VIRTUAL_ENV_DISABLE_PROMPT ]]; then
-    prompt_segment blue black "(`basename $virtualenv_path`)"
+    local python_version
+    # Have to output stderr to stdout for python2
+    python_version=$(python --version 2>&1 | grep -oP '(\d+\.{0,}){0,}')
+    prompt_segment black red " $python_version (`basename $virtualenv_path`)"
   fi
 }
 
@@ -207,6 +210,7 @@ prompt_status() {
   symbols=()
   [[ $RETVAL -ne 0 ]] && symbols+="%{%F{red}%}✘"
   [[ $UID -eq 0 ]] && symbols+="%{%F{yellow}%}⚡"
+  [[ $USER == "travis" ]] && symbols+="%{%F{yellow}%} "
   [[ $(jobs -l | wc -l) -gt 0 ]] && symbols+="%{%F{cyan}%}⚙"
 
   [[ -n "$symbols" ]] && prompt_segment black default "$symbols"
